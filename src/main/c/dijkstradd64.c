@@ -54,9 +54,9 @@
 #define mx 500000
 
 int main(){
-  int mx1=mx/n;
-  clock_t t0=clock();
-  for(int h=0;h<10;h++){
+	int mx1=mx/n;
+//  clock_t t0=clock();
+//  for(int h=0;h<10;h++){
     int lng=0;
     for(int n1=0;n1<n;n1++){
       for(int k1=0;k1<mx1;k1++){
@@ -95,11 +95,11 @@ int main(){
       }
     }
     printf("done %d\n",lng);
-    double t2=(double)(clock()-t0)/CLOCKS_PER_SEC;
-    double t3= t2/(h+1);
-    double t4= t3*1000000/(mx);
-    printf("time %f %f %f\n",t3,t2,t4);
-  }
+//    double t2=(double)(clock()-t0)/CLOCKS_PER_SEC;
+//    double t3= t2/(h+1);
+//    double t4= t3*1000000/(mx);
+//    printf("time %f %f %f\n",t3,t2,t4);
+//  }
   return 0;
 }
 
