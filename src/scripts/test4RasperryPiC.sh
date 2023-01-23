@@ -28,13 +28,13 @@
 		do 
             #            echo $LOGFILE
 			# echo "[$(date)]" >> $LOGFILE		
-			for j1 in 1 2 # 3 4 5 6 7 8 9 10
+			for j1 in 1 2 3 4 5 6 7 8 9 10
 			do	
 				echo "$j1; "
 
-				for j2 in 1 #2 3 4
+				for j2 in 1 2 3 4
 				do	
-					for i in 1 # 2 3 4 5 6 7 8 9 10
+					for i in 1 2 3 4 5 6 7 8 9 10
 					do
 #						echo "$j1*$j2*$i; " >> $LOGFILE
 						benchcmd $file
