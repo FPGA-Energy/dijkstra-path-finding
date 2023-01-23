@@ -1,0 +1,88 @@
+[*]
+[*] GTKWave Analyzer v3.3.113 (w)1999-2022 BSI
+[*] Sat Jan  7 12:06:18 2023
+[*]
+[dumpfile] "/home/tjarker/onedrive/devel/dijkstra/test_run_dir/WeightMemory_should_provide_weights_to_neighbors_for_each_node/WeightMemory.vcd"
+[dumpfile_mtime] "Sat Jan  7 12:05:13 2023"
+[dumpfile_size] 16533
+[savefile] "/home/tjarker/onedrive/devel/dijkstra/weightmem.gtkw"
+[timestart] 0
+[size] 2240 1321
+[pos] -27 -24
+*-4.919996 43 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] WeightMemory.
+[sst_width] 273
+[signals_width] 326
+[sst_expanded] 1
+[sst_vpaned_height] 409
+@28
+WeightMemory.clock
+@200
+-
+@28
+WeightMemory.io_changeSource_valid
+@22
+WeightMemory.io_changeSource_data_id[5:0]
+@200
+-
+@28
+WeightMemory.io_sinkGroup_valid
+@22
+WeightMemory.io_sinkGroup_data[3:0]
+@200
+-
+-
+@28
+WeightMemory.io_weights_valid
+WeightMemory.io_weights_data_0_valid
+@22
+WeightMemory.io_weights_data_0_data[15:0]
+@200
+-
+@28
+WeightMemory.io_weights_data_1_valid
+@22
+WeightMemory.io_weights_data_1_data[15:0]
+@200
+-
+@28
+WeightMemory.io_weights_data_2_valid
+@22
+WeightMemory.io_weights_data_2_data[15:0]
+@200
+-
+@28
+WeightMemory.io_weights_data_3_valid
+@22
+WeightMemory.io_weights_data_3_data[15:0]
+@200
+-
+-
+@28
+WeightMemory.availableSinks.io_availableSinks_data_0_valid
+@22
+WeightMemory.availableSinks.io_availableSinks_data_0_data_id[5:0]
+@200
+-
+@28
+WeightMemory.availableSinks.io_availableSinks_data_1_valid
+@22
+WeightMemory.availableSinks.io_availableSinks_data_1_data_id[5:0]
+@200
+-
+@28
+WeightMemory.availableSinks.io_availableSinks_data_2_valid
+@22
+WeightMemory.availableSinks.io_availableSinks_data_2_data_id[5:0]
+@200
+-
+@28
+WeightMemory.availableSinks.io_availableSinks_data_3_valid
+@22
+WeightMemory.availableSinks.io_availableSinks_data_3_data_id[5:0]
+@201
+-
+@28
+WeightMemory.availableSinks.io_hits[2:0]
+[pattern_trace] 1
+[pattern_trace] 0
