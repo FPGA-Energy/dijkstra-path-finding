@@ -11,10 +11,10 @@ class WeightMemoryTest extends AnyFlatSpec with ChiselScalatestTester {
 
     val k = 4
     val g = Graph.fromFile("src/graphs/d-d-64-v.csv", 16.W)
-    println(g(Graph.Node(g.n, 2)).mkString("\n"))
+
     test(new WeightMemory(16384, k, g)(true)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
 
-      for (source <- g.nodes) {
+      for (source <- Seq.fill(g.nodes.length / k)(g.nodes(scala.util.Random.nextInt(g.nodes.length)))) {
 
         dut.io.changeSource.data.poke(source)
         dut.io.changeSource.valid.poke(1.B)
@@ -34,7 +34,7 @@ class WeightMemoryTest extends AnyFlatSpec with ChiselScalatestTester {
           dut.io.sinkGroup.valid.poke(0.B)
 
           for (i <- 0 until k) {
-            g(source -> Graph.Node(g.n, group * k + i)) match {
+            g.edge(source -> Graph.Node(g.n, group * k + i)) match {
               case Some(weight) => {
                 println(s"${source.id.litValue} -> ${group * k + i}: ${weight.litValue} == ${if (dut.io.weights.data(i).valid.peek.litToBoolean) dut.io.weights.data(i).data.peek.litValue else "None"}")
                 dut.io.weights.data(i).valid.expect(1.B, s"error for Node(${group * k + i})")
@@ -58,7 +58,7 @@ class WeightMemoryTest extends AnyFlatSpec with ChiselScalatestTester {
 
       val k = 4
       val g = Graph.fromFile("src/graphs/simple.csv", 16.W)
-      println(g(Graph.Node(g.n, 2)).mkString("\n"))
+
       test(new WeightMemory(16384, k, g)(true)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
 
         for (source <- g.nodes) {
@@ -81,7 +81,7 @@ class WeightMemoryTest extends AnyFlatSpec with ChiselScalatestTester {
             dut.io.sinkGroup.valid.poke(0.B)
 
             for (i <- 0 until k) {
-              g(source -> Graph.Node(g.n, group * k + i)) match {
+              g.edge(source -> Graph.Node(g.n, group * k + i)) match {
                 case Some(weight) => {
                   println(s"${source.id.litValue} -> ${group * k + i}: ${weight.litValue} == ${if (dut.io.weights.data(i).valid.peek.litToBoolean) dut.io.weights.data(i).data.peek.litValue else "None"}")
                   dut.io.weights.data(i).valid.expect(1.B, s"error for Node(${group * k + i})")

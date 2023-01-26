@@ -30,11 +30,11 @@ class AvailableSinks(size: Int, k: Int, g: Graph)(implicit simulation: Boolean) 
 
   val sinkTable = ReadOnlyTable.Synchronous(k, g.getSinkTable, Some("SinkTable"))
 
-  val pointer = RegInit(UInt(0 until size / k), 0.U)
+  val pointer = RegInit(UInt(0 until g.getSinkTable.length / k), 0.U)
   val nextPointer = WireDefault(pointer)
   pointer := nextPointer
-  val startPointer = RegInit(UInt(0 until size), 0.U)
-  val endPointer = RegInit(UInt(0 until size), 0.U)
+  val startPointer = RegInit(UInt(0 until g.getSinkTable.length), 0.U)
+  val endPointer = RegInit(UInt(0 until g.getSinkTable.length), 0.U)
 
   val hitCounter = RegInit(UInt(0 until k), 0.U)
   val hitCounterUpdate = hitCounter +& io.hits
@@ -48,7 +48,7 @@ class AvailableSinks(size: Int, k: Int, g: Graph)(implicit simulation: Boolean) 
   val insideBoundsBuffers = Reg(Vec(2, Vec(k, Bool())))
 
 
-  val (startPointerTable, endPointerTable) = g.generatePointerTable
+  val (startPointerTable, endPointerTable) = g.generatePointerRoms
   val sinkMemoryOut = sinkTable.read(nextPointer).toVec
 
   val nextInsideBounds = Seq.tabulate(k)(i => pointer ## i.U(log2Ceil(k).W)).map { address =>
@@ -95,7 +95,7 @@ class AvailableSinks(size: Int, k: Int, g: Graph)(implicit simulation: Boolean) 
       stateReg := State.NormalOperation
       bufferLoad(1) := 1.B
       nextPointer := pointer + 1.U
-      bufferSelect := startPointer(0)
+      bufferSelect := 0.B
       hitCounter := startPointer.takeLsb(log2Ceil(k))
     }
     is(State.NormalOperation) {

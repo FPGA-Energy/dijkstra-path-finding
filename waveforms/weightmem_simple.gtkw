@@ -1,0 +1,138 @@
+[*]
+[*] GTKWave Analyzer v3.3.113 (w)1999-2022 BSI
+[*] Tue Jan 24 21:34:10 2023
+[*]
+[dumpfile] "/home/tjarker/onedrive/devel/dijkstra-path-finding/test_run_dir/WeightMemory_should_provide_weights_to_neighbors_for_each_node_in_simple/WeightMemory.vcd"
+[dumpfile_mtime] "Tue Jan 24 21:27:54 2023"
+[dumpfile_size] 31925
+[savefile] "/home/tjarker/onedrive/devel/dijkstra-path-finding/waveforms/weightmem_simple.gtkw"
+[timestart] 0
+[size] 2240 1321
+[pos] -27 -24
+*-4.613322 44 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] WeightMemory.
+[sst_width] 358
+[signals_width] 326
+[sst_expanded] 1
+[sst_vpaned_height] 408
+@28
+WeightMemory.clock
+@200
+-
+-
+@28
+WeightMemory.io_changeSource_valid
+@22
+WeightMemory.io_changeSource_data_id[3:0]
+@200
+-
+@28
+WeightMemory.io_sinkGroup_valid
+WeightMemory.io_ready
+WeightMemory.io_sinkGroup_data[1:0]
+@200
+-
+-
+@22
+WeightMemory.availableSinks.startPointer[13:0]
+WeightMemory.availableSinks.endPointer[13:0]
+WeightMemory.availableSinks.pointer[11:0]
+@28
+WeightMemory.availableSinks.stateReg[1:0]
+@200
+-
+@28
+WeightMemory.io_weights_valid
+@200
+-
+@22
+WeightMemory.io_weights_data_0_data[15:0]
+@28
+WeightMemory.io_weights_data_0_valid
+@22
+WeightMemory.io_weights_data_1_data[15:0]
+@28
+WeightMemory.io_weights_data_1_valid
+@22
+WeightMemory.io_weights_data_2_data[15:0]
+@28
+WeightMemory.io_weights_data_2_valid
+@22
+WeightMemory.io_weights_data_3_data[15:0]
+@28
+WeightMemory.io_weights_data_3_valid
+@200
+-
+@28
+WeightMemory.availableSinks.hitCounter[1:0]
+@200
+-
+@22
+WeightMemory.availableSinks.io_availableSinks_data_0_data_id[3:0]
+WeightMemory.availableSinks.io_addresses_0[11:0]
+@28
+WeightMemory.availableSinks.io_availableSinks_data_0_valid
+@22
+WeightMemory.availableSinks.io_availableSinks_data_1_data_id[3:0]
+WeightMemory.availableSinks.io_addresses_1[11:0]
+@28
+WeightMemory.availableSinks.io_availableSinks_data_1_valid
+@22
+WeightMemory.availableSinks.io_availableSinks_data_2_data_id[3:0]
+WeightMemory.availableSinks.io_addresses_2[11:0]
+@28
+WeightMemory.availableSinks.io_availableSinks_data_2_valid
+@22
+WeightMemory.availableSinks.io_availableSinks_data_3_data_id[3:0]
+WeightMemory.availableSinks.io_addresses_3[11:0]
+@28
+WeightMemory.availableSinks.io_availableSinks_data_3_valid
+@200
+-
+-
+@22
+WeightMemory.availableSinks.sinkMemoryOut_0_id[3:0]
+WeightMemory.availableSinks.sinkMemoryOut_1_id[3:0]
+WeightMemory.availableSinks.sinkMemoryOut_2_id[3:0]
+WeightMemory.availableSinks.sinkMemoryOut_3_id[3:0]
+WeightMemory.availableSinks.sinkMemoryOut_REG[11:0]
+WeightMemory.availableSinks.sinkMemoryOut_REG_1[11:0]
+WeightMemory.availableSinks.sinkMemoryOut_REG_2[11:0]
+WeightMemory.availableSinks.sinkMemoryOut_REG_3[11:0]
+@200
+-
+@28
+WeightMemory.availableSinks.nextInsideBounds_0
+WeightMemory.availableSinks.nextInsideBounds_1
+WeightMemory.availableSinks.nextInsideBounds_2
+WeightMemory.availableSinks.nextInsideBounds_3
+@200
+-
+@22
+WeightMemory.availableSinks.buffers_0_0_id[3:0]
+WeightMemory.availableSinks.buffers_0_1_id[3:0]
+WeightMemory.availableSinks.buffers_0_2_id[3:0]
+WeightMemory.availableSinks.buffers_0_3_id[3:0]
+WeightMemory.availableSinks.buffers_1_0_id[3:0]
+WeightMemory.availableSinks.buffers_1_1_id[3:0]
+WeightMemory.availableSinks.buffers_1_2_id[3:0]
+WeightMemory.availableSinks.buffers_1_3_id[3:0]
+@200
+-
+@29
+WeightMemory.availableSinks.bufferSelect
+@200
+-
+@28
+WeightMemory.availableSinks.insideBoundsBuffers_0_0
+WeightMemory.availableSinks.insideBoundsBuffers_0_1
+WeightMemory.availableSinks.insideBoundsBuffers_0_2
+WeightMemory.availableSinks.insideBoundsBuffers_0_3
+WeightMemory.availableSinks.insideBoundsBuffers_1_0
+WeightMemory.availableSinks.insideBoundsBuffers_1_1
+WeightMemory.availableSinks.insideBoundsBuffers_1_2
+WeightMemory.availableSinks.insideBoundsBuffers_1_3
+@200
+-
+[pattern_trace] 1
+[pattern_trace] 0

@@ -3,12 +3,13 @@ import Helper.{BundleExpander, SeqDataExtension, SyncReadMemExtension, nextPow2}
 import chisel3._
 import chisel3.experimental.BundleLiterals.AddBundleLiteralConstructor
 import chisel3.experimental.VecLiterals._
-import chisel3.experimental.{ChiselAnnotation, annotate}
+import chisel3.experimental.{ChiselAnnotation, annotate, prefix}
 import chisel3.internal.firrtl.Width
 import chisel3.util.log2Ceil
 import chiseltest._
 import firrtl.annotations.MemoryArrayInitAnnotation
 
+import scala.collection.mutable
 import scala.io.Source
 import scala.math
 
@@ -33,7 +34,7 @@ object Graph {
 
   object OutGoingEdge {
     def apply(n: Int, w: Width): OutGoingEdge = new OutGoingEdge(n, w)
-    def apply(n: Int, w: Width, id: Int, weight: Int): OutGoingEdge = OutGoingEdge(n,w).Lit(_.end -> Node(n, id), _.weight -> weight.U(w))
+    def apply(n: Int, w: Width, end: Graph.Node, weight: Int): OutGoingEdge = OutGoingEdge(n,w).Lit(_.end -> end, _.weight -> weight.U(w))
   }
   class OutGoingEdge(n: Int, w: Width) extends Bundle {
     val end = Node(n)
@@ -57,14 +58,13 @@ object Graph {
       .toSeq
 
     val n = nextPow2(edges.map(_._1).max + 1)
-    println(n)
 
     Graph(n, w, Seq.tabulate(n) { id =>
       Node(n, id) -> edges
         .filter(_._1 == id)
         .sortBy(_._2)
         .map { case (_, end, weight) =>
-          OutGoingEdge(n, w, end, weight)
+          OutGoingEdge(n, w, Node(n, end), weight)
         }
     })
   }
@@ -73,31 +73,79 @@ object Graph {
 
 class Graph(val n: Int, val w: Width, adjacencySeq: Seq[(Graph.Node,Seq[Graph.OutGoingEdge])]) {
 
-  def generatePointerTable(implicit simulation: Boolean, clock: Clock): (ReadOnlyTable[UInt], ReadOnlyTable[UInt]) = {
+  def generatePointerTable: (Seq[Int],Seq[Int]) = {
     val (end, table) = adjacencySeq.foldLeft(0 -> Seq[(Int, Int)]()) { case ((top, table), (_, edges)) =>
       val m = edges.length
-      (top + m, table :+ (top -> (top + m - 1)))
+      (top + m, table :+ (top -> (top + m - { if (m == 0) 0 else 1 })))
     }
-    ReadOnlyTable.Asynchronous(1, table.map(_._1.U), Some("StartPointerTable")) -> ReadOnlyTable.Asynchronous(1, table.map(_._2.U), Some("EndPointerTable"))
+    (table.map(_._1),table.map(_._2))
+  }
+
+  def generatePointerRoms(implicit simulation: Boolean, clock: Clock): (ReadOnlyTable[UInt], ReadOnlyTable[UInt]) = {
+    val (startPointers, endPointers) = generatePointerTable
+    ReadOnlyTable.Asynchronous(1, startPointers.map(_.U), Some("StartPointerTable")) -> ReadOnlyTable.Asynchronous(1, endPointers.map(_.U), Some("EndPointerTable"))
   }
 
   def apply(node: Graph.Node): Seq[Graph.OutGoingEdge] = adjacencySeq.find(_._1 == node).get._2
 
-  def apply(connection: (Graph.Node, Graph.Node)): Option[UInt] = {
+  def edge(connection: (Graph.Node, Graph.Node)): Option[UInt] = {
     apply(connection._1).find(_.end == connection._2) match {
       case Some(edge) => Some(edge.weight)
       case None => None
     }
   }
 
+
+  def distance(route: (Graph.Node, Graph.Node)): Option[UInt] = {
+
+    val (start, end) = route
+
+
+    val previous = mutable.ArrayBuffer.fill[Option[Graph.Node]](n)(None)
+    val dist = mutable.ArrayBuffer.fill[Option[BigInt]](n)(None)
+    dist(start.id.litValue.toInt) = Some(0)
+
+
+
+    val ordering: Ordering[(Int, BigInt)] = (a, b) => a._2.compareTo(b._2)
+    val queue = mutable.PriorityQueue(start.id.litValue.toInt -> BigInt(0))(ordering)
+
+    while(queue.nonEmpty) {
+
+      val (current, distance) = queue.dequeue()
+      val edges = adjacencySeq.find(_._1.id.litValue.toInt == current).get._2
+
+      edges.foreach { e =>
+        val newRoute = distance + e.weight.litValue
+        dist(e.end.id.litValue.toInt) match {
+          case None  =>
+            dist(e.end.litValue.toInt) = Some(newRoute)
+            previous(e.end.litValue.toInt) = Some(nodes(current))
+            if (!queue.exists(_._1 == e.end.id.litValue.toInt)) queue.enqueue(e.end.id.litValue.toInt -> newRoute)
+          case Some(oldRoute) if oldRoute > newRoute =>
+            dist(e.end.litValue.toInt) = Some(newRoute)
+            previous(e.end.litValue.toInt) = Some(nodes(current))
+            if (!queue.exists(_._1 == e.end.id.litValue.toInt)) queue.enqueue(e.end.id.litValue.toInt -> newRoute)
+          case _ =>
+          }
+        }
+      }
+
+    dist(end.id.litValue.toInt) match {
+      case None => None
+      case Some(v) => Some(v.U)
+    }
+  }
+
+
   def adjacencyMatrix: (Seq[Seq[Bool]], Seq[Seq[UInt]]) = {
     Seq.tabulate(n,n) { (i,j) =>
-      apply(Graph.Node(n, i) -> Graph.Node(n, j)) match {
+      edge(Graph.Node(n, i) -> Graph.Node(n, j)) match {
         case Some(_) => 1.B
         case None => 0.B
       }
     } -> Seq.tabulate(n, n) { (i, j) =>
-      apply(Graph.Node(n, i) -> Graph.Node(n, j)) match {
+      edge(Graph.Node(n, i) -> Graph.Node(n, j)) match {
         case Some(weight) => weight
         case None => 0.U(w)
       }
@@ -110,5 +158,16 @@ class Graph(val n: Int, val w: Width, adjacencySeq: Seq[(Graph.Node,Seq[Graph.Ou
   def nodes: Seq[Graph.Node] = adjacencySeq.map(_._1)
 
   override def toString: String = adjacencySeq.map(a => a._1.toString() + "\n\t" + a._2.mkString("\n\t")).mkString("\n")
+
+}
+
+
+object Test extends App {
+
+  val g = Graph.fromFile("src/graphs/d-d-64-v.csv", 16.W)
+
+  g.nodes.foreach { end =>
+    println(g.distance(g.nodes(0) -> end))
+  }
 
 }

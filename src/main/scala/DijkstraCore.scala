@@ -7,6 +7,7 @@ import RunningMinimum.Candidate
 import chisel3.experimental.ChiselEnum
 import chisel3.internal.firrtl.Width
 import chisel3.util.{Decoupled, is, log2Ceil, switch}
+import firrtl.transforms.DontTouchAnnotation
 
 class DijkstraCore(k: Int, g: Graph)(implicit simulation: Boolean) extends Module {
 
@@ -17,7 +18,7 @@ class DijkstraCore(k: Int, g: Graph)(implicit simulation: Boolean) extends Modul
 
   val sinkGroupReg = Reg(UInt(0 until g.n / k))
   val delayedSinkGroupReg = RegNext(sinkGroupReg, 0.U)
-  val weightMemory = Module(new WeightMemory(g.n, k, g))
+  val weightMemory = Module(new WeightMemory(g.getSinkTable.length, k, g))
   val routeMemory = Module(new RouteMemory(g.n, k, g.w))
 
   val current = Reg(Candidate(g.n, g.w))
@@ -31,12 +32,14 @@ class DijkstraCore(k: Int, g: Graph)(implicit simulation: Boolean) extends Modul
     .zip(routeMemory.io.entries)
     .zipWithIndex
     .map { case ((Valid(connected, weight), Entry(visited, Valid(known, oldRoute))), i) =>
-      val newRoute = RouteInfo(current.node, current.distance + weight)
-      val shorterRoute = newRoute.distance < oldRoute.distance
+      val newDistance = current.distance +& weight
+      val newRoute = RouteInfo(current.node, newDistance.takeLsb(g.w.get.toInt))
+      val overflow = WireDefault(newRoute.distance(newRoute.distance.getWidth-1))
+      val shorterRoute = newDistance < oldRoute.distance
       val update = (!known || shorterRoute) && connected
       val route = Mux(update, newRoute, oldRoute)
       (
-        Valid(update && weightMemory.io.weights.valid, route),
+        Valid(update && !overflow && weightMemory.io.weights.valid, route),
         Valid(!visited && (known || update) && weightMemory.io.weights.valid, Candidate(
           Graph.Node(g.n, delayedSinkGroupReg ## i.U(log2Ceil(k).W)),
           route.distance))
@@ -84,13 +87,20 @@ class DijkstraCore(k: Int, g: Graph)(implicit simulation: Boolean) extends Modul
       val isNewRoute = io.route.bits.start =/= start || io.route.bits.end =/= end
 
       when(isNewRoute && io.route.valid) {
-        stateReg := State.Update
-        weightMemory.io.sinkGroup.valid := 1.B
+        stateReg := State.SetStartDistance
         weightMemory.io.changeSource := Valid(1.B, io.route.bits.start)
-        sinkGroupReg := 0.U
-        routeMemory.io.visit := Valid(1.B, io.route.bits.start)
       }
 
+    }
+    is(State.SetStartDistance) {
+      routeMemory.io.update := Pair(
+        start.id.dropLsb(log2Ceil(k)),
+        VecInit.tabulate(k) { i => Valid(start.id.takeLsb(log2Ceil(k)) === i.U, RouteInfo(start, 0.U)) }
+      )
+      routeMemory.io.visit := Valid(1.B, io.route.bits.start)
+      stateReg := State.Update
+      sinkGroupReg := 0.U
+      weightMemory.io.sinkGroup.valid := 1.B
     }
     is(State.Update) {
 
@@ -143,7 +153,7 @@ class DijkstraCore(k: Int, g: Graph)(implicit simulation: Boolean) extends Modul
 object DijkstraCore {
 
   object State extends ChiselEnum {
-    val Startup, Idle, Update, WaitForMinimum, WaitForMinimum2, ChooseNext, ExtractDistance, ExtractDistance2 = Value
+    val Startup, Idle, SetStartDistance, Update, WaitForMinimum, WaitForMinimum2, ChooseNext, ExtractDistance, ExtractDistance2 = Value
   }
 
   class IO(n: Int, w: Width) extends Bundle {

@@ -13,6 +13,9 @@ class ReadOnlyTable[T <: Data](banks: Int, init: Seq[T], useVec: Boolean, synchr
 
   val width = init.toVec.head.getWidth
 
+  println(name)
+  println(getBanks.map(_.map(_.litValue).mkString(", ")).mkString("\n"))
+
   def read(p: UInt): Seq[T] = if (useVec) {
     if(synchronous) getBanks.map(_.toVec.apply(RegNext(p))) else getBanks.map(_.toVec.apply(p))
   } else {

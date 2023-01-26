@@ -18,9 +18,8 @@ class WeightMemory(size: Int, k: Int, g: Graph)(implicit simulation: Boolean) ex
   }
   hitCount := PopCount(hits)
 
-
   val weightTable = ReadOnlyTable.Synchronous(k, g.getWeightTable, Some("WeightTable"))
-  val weights = weightTable.read(addresses)
+  val weights = VecInit(weightTable.read(addresses))
 
   val matchers = Seq.tabulate(k) { i =>
     (hits, availableSinks.data, weights)
