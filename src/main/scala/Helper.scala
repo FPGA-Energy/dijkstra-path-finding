@@ -17,7 +17,7 @@ object Helper {
   }
 
   implicit class WidthExtension(w: Width) {
-    def maxValue: BigInt = BigInt(math.pow(2, w.get.toInt).toLong)
+    def maxValue: BigInt = BigInt(math.pow(2, w.get.toInt).toLong - 1)
   }
 
   implicit class Replicator[T](x: T) {
@@ -28,8 +28,12 @@ object Helper {
     def apply(range: Range): UInt = UInt(log2Ceil(range.max + 1).W)
   }
   implicit class UIntExtension(x: UInt) {
-    def dropLsb(n: Int): UInt = x(x.getWidth - 1, n)
-    def takeLsb(n: Int): UInt = x(n - 1, 0)
+    def dropLsb(n: Int = 1): UInt = x(x.getWidth - 1, n)
+    def takeLsb(n: Int = 1): UInt = x(n - 1, 0)
+    def dropMsb(n: Int = 1): UInt = x(x.getWidth - 2, 0)
+    def takeMsb(n: Int = 1): UInt = x(x.getWidth - 1, x.getWidth - 1 - n)
+
+    def maxValue: UInt = x.getWidth.W.maxValue.U
   }
 
   implicit class Transformer[T](x: T) {
@@ -219,6 +223,9 @@ object Helper {
 
 
   def nextPow2(x: Int): Int = pow2(log2Ceil(x))
+
+  def roundAt(p: Int)(n: Double): Double = { val s = math pow (10, p); (math round n * s) / s }
+
 
 }
 

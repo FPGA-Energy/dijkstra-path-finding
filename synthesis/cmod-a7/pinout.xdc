@@ -8,20 +8,20 @@ set_property CONFIG_VOLTAGE 3.3 [current_design]
 set_property IOSTANDARD LVCMOS33 [get_ports *]
 
 ## 12 MHz Clock Signal
-#set_property  PACKAGE_PIN L17   [get_ports { clock }]; #IO_L12P_T1_MRCC_14 Sch=gclk
+set_property  PACKAGE_PIN L17   [get_ports { clock }]; #IO_L12P_T1_MRCC_14 Sch=gclk
 create_clock -add -name sys_clk_pin -period 83.33 -waveform {0 41.66} [get_ports {clock}];
 
 ## LEDs
-#set_property PACKAGE_PIN A17  [get_ports {io_leds[0] }]; #IO_L12N_T1_MRCC_16 Sch=led[1]
-#set_property  PACKAGE_PIN C16   [get_ports {io_leds[1] }]; #IO_L13P_T2_MRCC_16 Sch=led[2]
+set_property PACKAGE_PIN A17  [get_ports {io_leds[0] }]; #IO_L12N_T1_MRCC_16 Sch=led[1]
+set_property  PACKAGE_PIN C16   [get_ports {io_leds[1] }]; #IO_L13P_T2_MRCC_16 Sch=led[2]
 
 ## RGB LED
-#set_property -dict { PACKAGE_PIN B17   IOSTANDARD LVCMOS33 } [get_ports { io_rgb[0] }]; #IO_L14N_T2_SRCC_16 Sch=led0_b
-#set_property -dict { PACKAGE_PIN B16   IOSTANDARD LVCMOS33 } [get_ports { io_rgb[1] }]; #IO_L13N_T2_MRCC_16 Sch=led0_g
-#set_property -dict { PACKAGE_PIN C17   IOSTANDARD LVCMOS33 } [get_ports { io_rgb[2] }]; #IO_L14P_T2_SRCC_16 Sch=led0_r
+set_property -dict { PACKAGE_PIN B17   IOSTANDARD LVCMOS33 } [get_ports { io_rgb[0] }]; #IO_L14N_T2_SRCC_16 Sch=led0_b
+set_property -dict { PACKAGE_PIN B16   IOSTANDARD LVCMOS33 } [get_ports { io_rgb[1] }]; #IO_L13N_T2_MRCC_16 Sch=led0_g
+set_property -dict { PACKAGE_PIN C17   IOSTANDARD LVCMOS33 } [get_ports { io_rgb[2] }]; #IO_L14P_T2_SRCC_16 Sch=led0_r
 
 ## Buttons
-#set_property  PACKAGE_PIN A18   [get_ports { reset }]; #IO_L19N_T3_VREF_16 Sch=btn[0]
+set_property  PACKAGE_PIN A18   [get_ports { reset }]; #IO_L19N_T3_VREF_16 Sch=btn[0]
 #set_property -dict { PACKAGE_PIN B18   IOSTANDARD LVCMOS33 } [get_ports { btn[1] }]; #IO_L19P_T3_16 Sch=btn[1]
 
 ## Pmod Header JA

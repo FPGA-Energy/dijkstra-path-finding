@@ -14,7 +14,7 @@ class RunningMinimum(n: Int, k: Int, w: Width) extends Module {
   })
 
 
-  val candidatesMininum = io.candidates.reduceTree(minimum)
+  val candidatesMininum = pipelinedReduce(RegNext(io.candidates), 4, minimum)
 
   val currentMinimum = Reg(Valid(Candidate(n,w)))
   val nextMinimum = minimum(currentMinimum, RegNext(candidatesMininum))

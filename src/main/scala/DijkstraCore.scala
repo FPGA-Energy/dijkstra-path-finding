@@ -25,6 +25,8 @@ class DijkstraCore(k: Int, g: Graph)(implicit simulation: Boolean) extends Modul
   val distance = Reg(UInt(0 until (g.n * g.w.maxValue.toInt)))
   val start = Reg(Graph.Node(g.n))
   val end = Reg(Graph.Node(g.n))
+  val minimumWaitCounter = Reg(UInt(0 until log2Ceil(k)))
+  val invalidRoutes = RegInit(1.B)
 
 
 
@@ -33,13 +35,13 @@ class DijkstraCore(k: Int, g: Graph)(implicit simulation: Boolean) extends Modul
     .zipWithIndex
     .map { case ((Valid(connected, weight), Entry(visited, Valid(known, oldRoute))), i) =>
       val newDistance = current.distance +& weight
-      val newRoute = RouteInfo(current.node, newDistance.takeLsb(g.w.get.toInt))
+      val newRoute = RouteInfo(current.node, newDistance.dropMsb())
       val overflow = WireDefault(newRoute.distance(newRoute.distance.getWidth-1))
       val shorterRoute = newDistance < oldRoute.distance
       val update = (!known || shorterRoute) && connected
       val route = Mux(update, newRoute, oldRoute)
       (
-        Valid(update && !overflow && weightMemory.io.weights.valid, route),
+        Valid(update && weightMemory.io.weights.valid, route),
         Valid(!visited && (known || update) && weightMemory.io.weights.valid, Candidate(
           Graph.Node(g.n, delayedSinkGroupReg ## i.U(log2Ceil(k).W)),
           route.distance))
@@ -84,11 +86,14 @@ class DijkstraCore(k: Int, g: Graph)(implicit simulation: Boolean) extends Modul
       start := io.route.bits.start
       end := io.route.bits.end
       current := Candidate(io.route.bits.start, 0.U)
-      val isNewRoute = io.route.bits.start =/= start || io.route.bits.end =/= end
+      val newStart = io.route.bits.start =/= start
+      val newEnd = io.route.bits.end =/= end
 
-      when(isNewRoute && io.route.valid) {
+      when((newStart || invalidRoutes) && io.route.valid) {
         stateReg := State.SetStartDistance
         weightMemory.io.changeSource := Valid(1.B, io.route.bits.start)
+      }.elsewhen(newEnd && io.route.valid) {
+        stateReg := State.ExtractDistance
       }
 
     }
@@ -113,14 +118,13 @@ class DijkstraCore(k: Int, g: Graph)(implicit simulation: Boolean) extends Modul
 
       when(lastGroup) {
         stateReg := State.WaitForMinimum
+        minimumWaitCounter := 0.U
       }
 
     }
     is(State.WaitForMinimum) {
-      stateReg := State.WaitForMinimum2
-    }
-    is(State.WaitForMinimum2) {
-      stateReg := State.ChooseNext
+      minimumWaitCounter := minimumWaitCounter + 1.U
+      stateReg := Mux(minimumWaitCounter === (log2Ceil(k) - 1).U, State.ChooseNext, State.WaitForMinimum)
     }
     is(State.ChooseNext) {
 
@@ -143,6 +147,7 @@ class DijkstraCore(k: Int, g: Graph)(implicit simulation: Boolean) extends Modul
       routeMemory.io.reinitialize := 1.B
       distance := routeMemory.io.entries(end.id.takeLsb(log2Ceil(k))).route.data.distance
       stateReg := State.Idle
+      invalidRoutes := 0.B
     }
   }
 
@@ -153,7 +158,7 @@ class DijkstraCore(k: Int, g: Graph)(implicit simulation: Boolean) extends Modul
 object DijkstraCore {
 
   object State extends ChiselEnum {
-    val Startup, Idle, SetStartDistance, Update, WaitForMinimum, WaitForMinimum2, ChooseNext, ExtractDistance, ExtractDistance2 = Value
+    val Startup, Idle, SetStartDistance, Update, WaitForMinimum, ChooseNext, ExtractDistance, ExtractDistance2 = Value
   }
 
   class IO(n: Int, w: Width) extends Bundle {
@@ -164,6 +169,6 @@ object DijkstraCore {
     val distance = Output(Valid(UInt(0 until (n * w.maxValue.toInt))))
   }
 
-  def main(args: Array[String]) = emitVerilog(new DijkstraCore(4, Graph.fromFile("src/graphs/d-d-64-v.csv", 16.W))(false), Array("--target-dir","build"))
+  def main(args: Array[String]) = emitVerilog(new DijkstraCore(8, Graph.fromFile("src/graphs/d-d-64-v.csv", 17.W))(false), Array("--target-dir","build"))
 
 }
